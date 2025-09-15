@@ -12,6 +12,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const {
     clientId,
     setClientId,
+    openAIKey,
+    setOpenAIKey,
+    userResume,
+    setUserResume,
+    userSkills,
+    setUserSkills,
     demoMode,
     setDemoMode,
     autoSync,
@@ -23,17 +29,26 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   } = useStore();
 
   const [tempClientId, setTempClientId] = useState(clientId || '');
+  const [tempOpenAIKey, setTempOpenAIKey] = useState(openAIKey || '');
+  const [tempResume, setTempResume] = useState(userResume || '');
+  const [tempSkills, setTempSkills] = useState(userSkills.join(', '));
   const [tempSyncInterval, setTempSyncInterval] = useState(syncInterval);
 
   useEffect(() => {
     if (isOpen) {
       setTempClientId(clientId || '');
+      setTempOpenAIKey(openAIKey || '');
+      setTempResume(userResume || '');
+      setTempSkills(userSkills.join(', '));
       setTempSyncInterval(syncInterval);
     }
-  }, [isOpen, clientId, syncInterval]);
+  }, [isOpen, clientId, openAIKey, userResume, userSkills, syncInterval]);
 
   const handleSave = () => {
     setClientId(tempClientId || null);
+    setOpenAIKey(tempOpenAIKey || null);
+    setUserResume(tempResume || null);
+    setUserSkills(tempSkills.split(',').map(s => s.trim()).filter(Boolean));
     setSyncInterval(tempSyncInterval);
     onClose();
   };
@@ -92,6 +107,45 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         </ol>
                       </div>
                     </div>
+                  </div>
+                </div>
+                
+                {/* OpenAI Configuration */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-slate-300">AI Match Scoring</h3>
+                  <div className="space-y-2">
+                    <label className="text-xs text-slate-400">OpenAI API Key</label>
+                    <input
+                      type="password"
+                      value={tempOpenAIKey}
+                      onChange={(e) => setTempOpenAIKey(e.target.value)}
+                      placeholder="sk-..."
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm"
+                    />
+                    <p className="text-xs text-slate-400">
+                      Get your API key from platform.openai.com
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-xs text-slate-400">Your Skills (comma-separated)</label>
+                    <input
+                      type="text"
+                      value={tempSkills}
+                      onChange={(e) => setTempSkills(e.target.value)}
+                      placeholder="React, TypeScript, Node.js, Python..."
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-xs text-slate-400">Resume Summary</label>
+                    <textarea
+                      value={tempResume}
+                      onChange={(e) => setTempResume(e.target.value)}
+                      placeholder="Paste your resume or a brief summary of your experience..."
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm h-32 resize-none"
+                    />
                   </div>
                 </div>
                 

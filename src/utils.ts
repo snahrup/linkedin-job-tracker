@@ -2,11 +2,11 @@ import { ApplicationRec, AppStatus, Stats } from './types';
 import { format, formatDistanceToNow, differenceInDays } from 'date-fns';
 
 export const STATUS_COLORS: Record<AppStatus, string> = {
-  pending: "bg-amber-500/20 text-amber-300 border-amber-400/30",
-  viewed: "bg-emerald-500/20 text-emerald-300 border-emerald-400/30",
-  rejected: "bg-rose-500/20 text-rose-300 border-rose-400/30",
-  interview_requested: "bg-violet-500/20 text-violet-300 border-violet-400/30",
-  offer: "bg-cyan-500/20 text-cyan-300 border-cyan-400/30",
+  pending: "bg-amber-500/30 text-amber-300 border-amber-500/50",
+  viewed: "bg-emerald-500/30 text-emerald-300 border-emerald-500/50",
+  rejected: "bg-rose-500/30 text-rose-300 border-rose-500/50",
+  interview_requested: "bg-violet-500/30 text-violet-300 border-violet-500/50",
+  offer: "bg-cyan-500/30 text-cyan-300 border-cyan-500/50",
 };
 
 export const STATUS_LABELS: Record<AppStatus, string> = {
@@ -118,30 +118,68 @@ export function generateDemoData(): ApplicationRec[] {
   const companies = [
     { name: "Google", logo: "🔍" },
     { name: "Microsoft", logo: "🪟" },
-    { name: "Amazon", logo: "📦" },
+    { name: "Amazon Web Services", logo: "☁️" },
     { name: "Meta", logo: "👥" },
     { name: "Apple", logo: "🍎" },
     { name: "Netflix", logo: "📺" },
     { name: "Spotify", logo: "🎵" },
-    { name: "Uber", logo: "🚗" },
+    { name: "Uber Technologies", logo: "🚗" },
+    { name: "Airbnb", logo: "🏠" },
+    { name: "Tesla", logo: "⚡" },
+    { name: "LinkedIn", logo: "💼" },
+    { name: "Adobe", logo: "🎨" },
+    { name: "Salesforce", logo: "☁️" },
+    { name: "Oracle", logo: "🗄️" },
+    { name: "IBM", logo: "💻" },
   ];
   
   const positions = [
     "Senior Software Engineer",
-    "Product Manager",
+    "Product Manager", 
     "Data Scientist",
     "UX Designer",
     "DevOps Engineer",
-    "Business Analyst",
+    "Business Intelligence Analyst",
     "Technical Lead",
     "Solutions Architect",
+    "Full Stack Developer",
+    "Machine Learning Engineer",
+    "Cloud Architect",
+    "Frontend Developer",
+    "Backend Engineer",
+    "Data Engineer",
+    "Security Engineer",
+    "Mobile Developer",
+    "QA Engineer",
+    "Site Reliability Engineer",
+    "Engineering Manager",
+    "Director of Engineering",
+    "VP of Product",
+    "Data Analytics Manager",
+    "Senior Data Consultant",
+    "Business Intelligence Developer",
+    "Snowflake Architect",
+  ];
+  
+  const locations = [
+    "San Francisco, CA",
+    "New York, NY", 
+    "Remote",
+    "Seattle, WA",
+    "Austin, TX",
+    "Boston, MA",
+    "Los Angeles, CA",
+    "Chicago, IL",
+    "Denver, CO",
+    "Atlanta, GA",
   ];
   
   const statuses: AppStatus[] = ["pending", "viewed", "interview_requested", "offer", "rejected"];
   
-  return Array.from({ length: 15 }, (_, i) => {
+  return Array.from({ length: 20 }, (_, i) => {
     const company = companies[i % companies.length];
     const position = positions[i % positions.length];
+    const location = locations[i % locations.length];
     const daysAgo = Math.floor(Math.random() * 60) + 1;
     const applicationDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
     const status = statuses[Math.floor(Math.random() * statuses.length)];
@@ -150,17 +188,17 @@ export function generateDemoData(): ApplicationRec[] {
       id: `demo-${i}`,
       company: company.name,
       position,
-      location: ["San Francisco, CA", "New York, NY", "Remote", "Seattle, WA"][i % 4],
+      location,
       applicationDate: applicationDate.toISOString(),
       status,
       viewDate: status !== "pending" ? new Date(applicationDate.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString() : undefined,
       responseDate: ["interview_requested", "offer", "rejected"].includes(status) 
         ? new Date(applicationDate.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString() 
         : undefined,
-      linkedinUrl: `https://www.linkedin.com/jobs/view/${1000000 + i}`,
+      linkedinUrl: `https://www.linkedin.com/jobs/view/${3000000000 + i}`,
       salaryRange: "$120,000 - $180,000",
       employmentType: "full_time",
-      workLocation: i % 3 === 0 ? "remote" : i % 3 === 1 ? "hybrid" : "onsite",
+      workLocation: location === "Remote" ? "remote" : i % 3 === 1 ? "hybrid" : "onsite",
       companyLogo: company.logo,
       daysSinceApplication: daysAgo,
       responseRate: 0.65,
@@ -177,7 +215,7 @@ export function generateDemoData(): ApplicationRec[] {
           source: "email" as const
         }] : []),
       ],
-      notes: "Demo application for testing",
+      notes: i % 3 === 0 ? "Follow up scheduled for next week" : undefined,
     };
     
     return app;

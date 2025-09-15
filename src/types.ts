@@ -46,6 +46,16 @@ export interface ApplicationRec {
   notes?: string;
   contactInfo?: string;
   nextSteps?: string;
+  matchScore?: {
+    overall: number;
+    skills: number;
+    experience: number;
+    location: number;
+    salary: number;
+    reasons: string[];
+    suggestions: string[];
+    calculatedAt: string;
+  };
 }
 
 export interface FilterState {

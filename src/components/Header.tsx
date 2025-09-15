@@ -1,7 +1,8 @@
 import React from 'react';
-import { RefreshCw, Settings, LogIn, LogOut, Download, Bell } from 'lucide-react';
+import { RefreshCw, Settings, LogIn, LogOut, Download, Bell, Trash2 } from 'lucide-react';
 import { useStore } from '../store';
 import { formatRelativeDate } from '../utils';
+import { clearExtractionCache } from '../aiExtraction';
 
 interface HeaderProps {
   onRefresh: () => void;
@@ -45,7 +46,7 @@ export function Header({ onRefresh, onSettingsClick, onExport, loading }: Header
                 <h1 className="text-lg font-semibold text-white">
                   Job Application Tracker
                 </h1>
-                <p className="text-xs text-slate-300">
+                <p className="text-xs text-slate-400">
                   {demoMode ? "Demo Mode" : userEmail || "Not connected"} • 
                   {lastUpdated ? ` Updated ${formatRelativeDate(lastUpdated)}` : " Never synced"}
                 </p>
@@ -68,6 +69,18 @@ export function Header({ onRefresh, onSettingsClick, onExport, loading }: Header
             >
               <Download className="h-4 w-4" />
               <span className="hidden sm:inline">Export</span>
+            </button>
+            
+            <button
+              onClick={() => {
+                clearExtractionCache();
+                alert('AI cache cleared! Next sync will reprocess all emails.');
+              }}
+              className="btn-secondary"
+              title="Clear AI extraction cache"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Clear Cache</span>
             </button>
             
             <button

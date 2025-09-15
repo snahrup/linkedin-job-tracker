@@ -32,12 +32,12 @@ export function Filters() {
     <div className="glass-card p-4 space-y-4">
       {/* Search Bar */}
       <div className="flex flex-wrap gap-3">
-        <div className="flex-1 min-w-[300px] flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-2">
+        <div className="flex-1 min-w-[300px] flex items-center gap-2 rounded-xl border border-slate-600 bg-slate-700/50 px-3 py-2">
           <Search className="h-4 w-4 text-slate-400" />
           <input
             type="text"
             placeholder="Search company, position, location..."
-            className="flex-1 bg-transparent outline-none placeholder:text-slate-400 text-sm"
+            className="flex-1 bg-transparent outline-none placeholder:text-slate-500 text-white text-sm"
             value={filters.query}
             onChange={(e) => setFilters({ query: e.target.value })}
           />
@@ -48,14 +48,14 @@ export function Filters() {
           <Calendar className="h-4 w-4 text-slate-400" />
           <input
             type="date"
-            className="bg-white/10 rounded-md px-2 py-1 border border-white/20 text-sm"
+            className="bg-slate-700/50 rounded-md px-2 py-1 border border-slate-600 text-white text-sm"
             value={filters.dateFrom || ""}
             onChange={(e) => setFilters({ dateFrom: e.target.value || undefined })}
           />
           <span className="text-slate-400">to</span>
           <input
             type="date"
-            className="bg-white/10 rounded-md px-2 py-1 border border-white/20 text-sm"
+            className="bg-slate-700/50 rounded-md px-2 py-1 border border-slate-600 text-white text-sm"
             value={filters.dateTo || ""}
             onChange={(e) => setFilters({ dateTo: e.target.value || undefined })}
           />
@@ -76,7 +76,7 @@ export function Filters() {
               className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
                 filters.statuses.includes(status)
                   ? STATUS_COLORS[status]
-                  : 'border-white/15 text-slate-400 bg-white/5 hover:bg-white/10'
+                  : 'border-slate-600 text-slate-400 bg-slate-700/30 hover:bg-slate-700/50'
               }`}
             >
               {STATUS_LABELS[status]}
@@ -98,8 +98,8 @@ export function Filters() {
               onClick={() => toggleWorkLocation(location)}
               className={`px-3 py-1 rounded-full text-xs font-medium border transition-all capitalize ${
                 filters.workLocations.includes(location)
-                  ? 'border-blue-400/30 bg-blue-500/20 text-blue-300'
-                  : 'border-white/15 text-slate-400 bg-white/5 hover:bg-white/10'
+                  ? 'border-blue-500/50 bg-blue-500/30 text-blue-300'
+                  : 'border-slate-600 text-slate-400 bg-slate-700/30 hover:bg-slate-700/50'
               }`}
             >
               {location}
@@ -121,8 +121,8 @@ export function Filters() {
               onClick={() => toggleEmploymentType(type)}
               className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
                 filters.employmentTypes.includes(type)
-                  ? 'border-green-400/30 bg-green-500/20 text-green-300'
-                  : 'border-white/15 text-slate-400 bg-white/5 hover:bg-white/10'
+                  ? 'border-green-500/50 bg-green-500/30 text-green-300'
+                  : 'border-slate-600 text-slate-400 bg-slate-700/30 hover:bg-slate-700/50'
               }`}
             >
               {type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}

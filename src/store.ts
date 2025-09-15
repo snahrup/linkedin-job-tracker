@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { ApplicationRec, FilterState } from './types';
 
 interface StoreState {
@@ -7,6 +7,17 @@ interface StoreState {
   clientId: string | null;
   accessToken: string | null;
   userEmail: string | null;
+  openAIKey: string | null;
+  
+  // User Profile
+  userResume: string | null;
+  userSkills: string[];
+  userPreferences: {
+    desiredRoles: string[];
+    minSalary: number | null;
+    preferredLocations: string[];
+    workMode: ('remote' | 'hybrid' | 'onsite')[];
+  };
   
   // Data
   lastUpdated: string | null;
@@ -23,6 +34,10 @@ interface StoreState {
   setClientId: (id: string | null) => void;
   setAccessToken: (token: string | null) => void;
   setUserEmail: (email: string | null) => void;
+  setOpenAIKey: (key: string | null) => void;
+  setUserResume: (resume: string | null) => void;
+  setUserSkills: (skills: string[]) => void;
+  setUserPreferences: (prefs: Partial<StoreState['userPreferences']>) => void;
   setDemoMode: (demo: boolean) => void;
   setApps: (apps: ApplicationRec[]) => void;
   updateApp: (id: string, updates: Partial<ApplicationRec>) => void;
@@ -42,6 +57,15 @@ export const useStore = create<StoreState>()(
       clientId: null,
       accessToken: null,
       userEmail: null,
+      openAIKey: null,
+      userResume: null,
+      userSkills: [],
+      userPreferences: {
+        desiredRoles: [],
+        minSalary: null,
+        preferredLocations: [],
+        workMode: ['remote', 'hybrid', 'onsite'],
+      },
       lastUpdated: null,
       demoMode: false,
       apps: [],
@@ -59,6 +83,12 @@ export const useStore = create<StoreState>()(
       setClientId: (id) => set({ clientId: id }),
       setAccessToken: (token) => set({ accessToken: token }),
       setUserEmail: (email) => set({ userEmail: email }),
+      setOpenAIKey: (key) => set({ openAIKey: key }),
+      setUserResume: (resume) => set({ userResume: resume }),
+      setUserSkills: (skills) => set({ userSkills: skills }),
+      setUserPreferences: (prefs) => set((state) => ({
+        userPreferences: { ...state.userPreferences, ...prefs }
+      })),
       setDemoMode: (demo) => set({ demoMode: demo }),
       setApps: (apps) => set({ apps }),
       updateApp: (id, updates) => set((state) => ({
@@ -76,6 +106,7 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: 'linkedin-job-tracker',
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         clientId: state.clientId,
         autoSync: state.autoSync,
