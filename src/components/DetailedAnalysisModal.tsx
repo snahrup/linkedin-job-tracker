@@ -1,12 +1,11 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  X, Target, TrendingUp, Brain, MapPin, DollarSign, 
-  Briefcase, CheckCircle, AlertCircle, Lightbulb,
-  BarChart3, User, Building2
+  X, Target, Brain, BarChart3, MapPin, DollarSign, 
+  CheckCircle, Lightbulb, User, Building2
 } from 'lucide-react';
 import { ApplicationRec } from '../types';
-import { getScoreColor, formatScore } from '../aiScoring';
+import { getScoreColor } from '../aiScoring';
 
 interface DetailedAnalysisModalProps {
   app: ApplicationRec | null;
@@ -14,67 +13,10 @@ interface DetailedAnalysisModalProps {
   onClose: () => void;
 }
 
-interface ScoreBarProps {
-  label: string;
-  score: number;
-  icon: React.ReactNode;
-}
-
-function ScoreBar({ label, score, icon }: ScoreBarProps) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {icon}
-          <span className="text-sm font-medium text-slate-300">{label}</span>
-        </div>
-        <span className={`text-sm font-bold px-2 py-1 rounded-full ${getScoreColor(score).replace('border-', 'bg-').replace('/50', '/10')}`}>
-          {score}%
-        </span>
-      </div>
-      <div className="w-full bg-slate-700 rounded-full h-2">
-        <motion.div
-          className={`h-2 rounded-full ${getScoreColor(score).split(' ')[0].replace('text-', 'bg-').replace('-400', '-500')}`}
-          initial={{ width: 0 }}
-          animate={{ width: `${score}%` }}
-          transition={{ duration: 1, delay: 0.2 }}
-        />
-      </div>
-    </div>
-  );
-}
-
 export function DetailedAnalysisModal({ app, isOpen, onClose }: DetailedAnalysisModalProps) {
   if (!app || !app.matchScore) return null;
 
   const { matchScore } = app;
-
-  const scoreCategories = [
-    {
-      label: 'Skills Match',
-      score: matchScore.skills,
-      icon: <Brain className="h-4 w-4 text-purple-400" />,
-      description: 'How well your technical skills align with job requirements'
-    },
-    {
-      label: 'Experience Level',
-      score: matchScore.experience,
-      icon: <User className="h-4 w-4 text-blue-400" />,
-      description: 'Your experience level vs. the position requirements'
-    },
-    {
-      label: 'Location Fit',
-      score: matchScore.location,
-      icon: <MapPin className="h-4 w-4 text-green-400" />,
-      description: 'Geographic compatibility and remote work preferences'
-    },
-    {
-      label: 'Compensation',
-      score: matchScore.salary,
-      icon: <DollarSign className="h-4 w-4 text-yellow-400" />,
-      description: 'Salary expectations vs. offered compensation'
-    }
-  ];
 
   const getOverallScoreText = (score: number) => {
     if (score >= 85) return { text: 'Excellent Match', color: 'text-green-400' };
@@ -85,6 +27,37 @@ export function DetailedAnalysisModal({ app, isOpen, onClose }: DetailedAnalysis
   };
 
   const overallScore = getOverallScoreText(matchScore.overall);
+
+  const scoreCategories = [
+    {
+      label: 'Skills Match',
+      score: matchScore.skills,
+      icon: Brain,
+      color: 'text-purple-400',
+      description: 'How well your technical skills align with job requirements'
+    },
+    {
+      label: 'Experience Level',
+      score: matchScore.experience,
+      icon: User,
+      color: 'text-blue-400',
+      description: 'Your experience level vs. the position requirements'
+    },
+    {
+      label: 'Location Fit',
+      score: matchScore.location,
+      icon: MapPin,
+      color: 'text-green-400',
+      description: 'Geographic compatibility and remote work preferences'
+    },
+    {
+      label: 'Compensation',
+      score: matchScore.salary,
+      icon: DollarSign,
+      color: 'text-yellow-400',
+      description: 'Salary expectations vs. offered compensation'
+    }
+  ];
 
   return (
     <AnimatePresence>
@@ -138,62 +111,102 @@ export function DetailedAnalysisModal({ app, isOpen, onClose }: DetailedAnalysis
                         <Target className="h-6 w-6 text-cyan-400" />
                         <h3 className="text-xl font-semibold text-white">Overall Match</h3>
                       </div>
-                      <div className="relative mb-4">
-                        <motion.div
-                          className="w-32 h-32 mx-auto rounded-full border-8 border-slate-700 flex items-center justify-center relative"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ duration: 0.5 }}
-                        >
-                          <motion.div
-                            className={`absolute inset-0 rounded-full border-8 ${getScoreColor(matchScore.overall).split(' ')[2]}`}
-                            style={{
-                              background: `conic-gradient(${getScoreColor(matchScore.overall).split(' ')[0].replace('text-', '').replace('-400', '')} ${matchScore.overall * 3.6}deg, transparent 0deg)`
-                            }}
-                            initial={{ rotate: -90 }}
-                            animate={{ rotate: -90 }}
+                      
+                      {/* Circular Progress */}
+                      <div className="relative w-40 h-40 mx-auto mb-4">
+                        <svg className="w-40 h-40 transform -rotate-90">
+                          <circle
+                            cx="80"
+                            cy="80"
+                            r="70"
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="none"
+                            className="text-slate-700"
                           />
-                          <div className="text-center relative z-10">
-                            <div className={`text-3xl font-bold ${getScoreColor(matchScore.overall).split(' ')[0]}`}>
-                              {matchScore.overall}%
-                            </div>
-                            <div className={`text-sm font-medium ${overallScore.color}`}>
-                              {overallScore.text}
-                            </div>
+                          <motion.circle
+                            cx="80"
+                            cy="80"
+                            r="70"
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={`${2 * Math.PI * 70}`}
+                            strokeDashoffset={`${2 * Math.PI * 70 * (1 - matchScore.overall / 100)}`}
+                            className={overallScore.color.replace('text-', 'text-')}
+                            initial={{ strokeDashoffset: `${2 * Math.PI * 70}` }}
+                            animate={{ strokeDashoffset: `${2 * Math.PI * 70 * (1 - matchScore.overall / 100)}` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <div className={`text-4xl font-bold ${overallScore.color}`}>
+                            {matchScore.overall}%
                           </div>
-                        </motion.div>
+                          <div className={`text-sm font-medium ${overallScore.color}`}>
+                            {overallScore.text}
+                          </div>
+                        </div>
                       </div>
+                      
                       <p className="text-sm text-slate-400">
                         Based on AI analysis of your profile vs. job requirements
                       </p>
                     </div>
                   </div>
 
-                  {/* Detailed Breakdown */}
+                  {/* Score Breakdown */}
                   <div className="lg:col-span-2">
                     <div className="glass-card p-6">
                       <div className="flex items-center gap-2 mb-6">
                         <BarChart3 className="h-5 w-5 text-cyan-400" />
                         <h3 className="text-xl font-semibold text-white">Score Breakdown</h3>
                       </div>
-                      <div className="space-y-6">
-                        {scoreCategories.map((category, index) => (
-                          <motion.div
-                            key={category.label}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                          >
-                            <ScoreBar
-                              label={category.label}
-                              score={category.score}
-                              icon={category.icon}
-                            />
-                            <p className="text-xs text-slate-500 mt-1 ml-6">
-                              {category.description}
-                            </p>
-                          </motion.div>
-                        ))}
+                      
+                      <div className="space-y-4">
+                        {scoreCategories.map((category, index) => {
+                          const Icon = category.icon;
+                          return (
+                            <motion.div
+                              key={category.label}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="space-y-2"
+                            >
+                              {/* Score Header */}
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Icon className={`h-4 w-4 ${category.color}`} />
+                                  <span className="text-sm font-medium text-white">{category.label}</span>
+                                </div>
+                                <span className={`text-sm font-bold ${getScoreColor(category.score).split(' ')[0]}`}>
+                                  {category.score}%
+                                </span>
+                              </div>
+                              
+                              {/* Progress Bar */}
+                              <div className="w-full bg-slate-700 rounded-full h-2">
+                                <motion.div
+                                  className={`h-2 rounded-full ${
+                                    category.score >= 80 ? 'bg-green-500' :
+                                    category.score >= 60 ? 'bg-yellow-500' :
+                                    category.score >= 40 ? 'bg-orange-500' :
+                                    'bg-red-500'
+                                  }`}
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${category.score}%` }}
+                                  transition={{ duration: 0.8, delay: 0.2 + index * 0.1 }}
+                                />
+                              </div>
+                              
+                              {/* Description */}
+                              <p className="text-xs text-slate-500 pl-6">
+                                {category.description}
+                              </p>
+                            </motion.div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
@@ -221,14 +234,14 @@ export function DetailedAnalysisModal({ app, isOpen, onClose }: DetailedAnalysis
                           transition={{ delay: 0.4 + index * 0.1 }}
                           className="flex items-start gap-3"
                         >
-                          <div className="w-2 h-2 rounded-full bg-green-400 mt-2 flex-shrink-0" />
-                          <span className="text-sm text-slate-300">{reason}</span>
+                          <CheckCircle className="h-4 w-4 text-green-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-slate-300 leading-relaxed">{reason}</span>
                         </motion.li>
                       ))}
                     </ul>
                   </motion.div>
 
-                  {/* Improvement Suggestions */}
+                  {/* Improvement Areas */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -248,63 +261,47 @@ export function DetailedAnalysisModal({ app, isOpen, onClose }: DetailedAnalysis
                           transition={{ delay: 0.6 + index * 0.1 }}
                           className="flex items-start gap-3"
                         >
-                          <div className="w-2 h-2 rounded-full bg-yellow-400 mt-2 flex-shrink-0" />
-                          <span className="text-sm text-slate-300">{suggestion}</span>
+                          <Lightbulb className="h-4 w-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-slate-300 leading-relaxed">{suggestion}</span>
                         </motion.li>
                       ))}
                     </ul>
                   </motion.div>
                 </div>
 
-                {/* Job Details */}
+                {/* Additional Job Details */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7 }}
                   className="glass-card p-6 mt-6"
                 >
-                  <div className="flex items-center gap-2 mb-4">
-                    <Briefcase className="h-5 w-5 text-cyan-400" />
-                    <h3 className="text-lg font-semibold text-white">Position Details</h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <div className="text-slate-400 mb-1">Location</div>
-                      <div className="text-white flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        {app.location}
-                        {app.workLocation && (
-                          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs capitalize">
-                            {app.workLocation}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {app.salaryRange && (
-                      <div>
-                        <div className="text-slate-400 mb-1">Salary Range</div>
-                        <div className="text-white flex items-center gap-2">
-                          <DollarSign className="h-4 w-4" />
-                          {app.salaryRange}
-                        </div>
-                      </div>
-                    )}
+                  <h3 className="text-lg font-semibold text-white mb-4">Job Details</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {app.employmentType && (
                       <div>
-                        <div className="text-slate-400 mb-1">Employment Type</div>
-                        <div className="text-white flex items-center gap-2">
-                          <Briefcase className="h-4 w-4" />
-                          <span className="capitalize">{app.employmentType.replace('_', ' ')}</span>
-                        </div>
+                        <p className="text-xs text-slate-500 mb-1">Employment Type</p>
+                        <p className="text-sm text-white capitalize">{app.employmentType.replace('_', ' ')}</p>
                       </div>
                     )}
+                    {app.workLocation && (
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Work Mode</p>
+                        <p className="text-sm text-white capitalize">{app.workLocation}</p>
+                      </div>
+                    )}
+                    {app.salaryRange && (
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Salary Range</p>
+                        <p className="text-sm text-white">{app.salaryRange}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1">Applied</p>
+                      <p className="text-sm text-white">{new Date(app.applicationDate).toLocaleDateString()}</p>
+                    </div>
                   </div>
                 </motion.div>
-
-                {/* Analysis Metadata */}
-                <div className="text-center mt-6 text-xs text-slate-500">
-                  Analysis calculated on {new Date(matchScore.calculatedAt).toLocaleString()}
-                </div>
               </div>
             </motion.div>
           </motion.div>
