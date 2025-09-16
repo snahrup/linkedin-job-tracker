@@ -516,7 +516,7 @@ export async function fetchApplicationsFromGmail(
       // Add to status history
       app.statusHistory = [
         ...app.statusHistory,
-        { status, timestamp: applicationDate, source: "email" }
+        { status, timestamp: applicationDate, source: "email" as const }
       ].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
       
       // Calculate days since application

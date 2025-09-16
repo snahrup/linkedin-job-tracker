@@ -9,7 +9,8 @@ export type EmploymentType =
   | "full_time"
   | "part_time"
   | "contract"
-  | "temporary";
+  | "temporary"
+  | "internship";
 
 export type WorkLocation = "remote" | "hybrid" | "onsite";
 
