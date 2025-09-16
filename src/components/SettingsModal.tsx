@@ -87,13 +87,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <div className="space-y-4">
                   <h3 className="text-sm font-medium text-slate-300">Google OAuth Configuration</h3>
                   <div className="space-y-2">
-                    <label className="text-xs text-slate-400">Client ID</label>
+                    <label className="text-xs text-slate-400">
+                      Client ID
+                      {import.meta.env.VITE_GMAIL_CLIENT_ID && (
+                        <span className="ml-2 text-green-400">(Using environment variable)</span>
+                      )}
+                    </label>
                     <input
                       type="text"
                       value={tempClientId}
                       onChange={(e) => setTempClientId(e.target.value)}
-                      placeholder="xxxx.apps.googleusercontent.com"
+                      placeholder={import.meta.env.VITE_GMAIL_CLIENT_ID ? "Set by environment variable" : "xxxx.apps.googleusercontent.com"}
                       className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm"
+                      disabled={!!import.meta.env.VITE_GMAIL_CLIENT_ID}
                     />
                     <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                       <AlertCircle className="h-4 w-4 text-amber-300 mt-0.5" />
@@ -114,13 +120,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <div className="space-y-4">
                   <h3 className="text-sm font-medium text-slate-300">AI Match Scoring</h3>
                   <div className="space-y-2">
-                    <label className="text-xs text-slate-400">OpenAI API Key</label>
+                    <label className="text-xs text-slate-400">
+                      OpenAI API Key
+                      {import.meta.env.VITE_OPENAI_API_KEY && (
+                        <span className="ml-2 text-green-400">(Using environment variable)</span>
+                      )}
+                    </label>
                     <input
                       type="password"
                       value={tempOpenAIKey}
                       onChange={(e) => setTempOpenAIKey(e.target.value)}
-                      placeholder="sk-..."
+                      placeholder={import.meta.env.VITE_OPENAI_API_KEY ? "Set by environment variable" : "sk-..."}
                       className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm"
+                      disabled={!!import.meta.env.VITE_OPENAI_API_KEY}
                     />
                     <p className="text-xs text-slate-400">
                       Get your API key from platform.openai.com
