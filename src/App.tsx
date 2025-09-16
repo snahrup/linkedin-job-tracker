@@ -238,6 +238,9 @@ function App() {
       </div>
       
       <div className="relative z-10">
+        {/* Add safe area padding for iPhone notch */}
+        <div className="safe-top" />
+        
         <Header
           onRefresh={() => fetchData()}
           onSettingsClick={() => setSettingsOpen(true)}
@@ -245,7 +248,7 @@ function App() {
           loading={loading}
         />
 
-        <main className="mx-auto max-w-7xl px-4 py-6 space-y-6">
+        <main className="mx-auto max-w-7xl px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
           {/* Sync Progress */}
           {syncProgress && (
             <div className="glass-card p-4 text-center">
@@ -256,17 +259,33 @@ function App() {
             </div>
           )}
 
-          {/* Filters */}
+          {/* Filters - Mobile optimized */}
           <Filters />
 
-          {/* Stats */}
+          {/* Stats - Mobile responsive */}
           <StatsRow stats={stats} />
 
-          {/* Applications Grid */}
+          {/* Applications Grid - Touch optimized */}
           <ApplicationGrid applications={filteredApps} />
 
-          {/* Analytics */}
-          {apps.length > 0 && <Analytics applications={filteredApps} />}
+          {/* Analytics - Hidden on small screens for performance */}
+          {apps.length > 0 && (
+            <div className="hidden sm:block">
+              <Analytics applications={filteredApps} />
+            </div>
+          )}
+          
+          {/* Show analytics button on mobile */}
+          {apps.length > 0 && (
+            <div className="block sm:hidden">
+              <button 
+                onClick={() => alert('Analytics view coming soon for mobile!')}
+                className="w-full py-3 bg-blue-600/20 border border-blue-500/30 rounded-xl text-blue-300 text-sm font-medium"
+              >
+                View Analytics →
+              </button>
+            </div>
+          )}
         </main>
 
         {/* Settings Modal */}

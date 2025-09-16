@@ -1,0 +1,57 @@
+{
+  "name": "LinkedIn Job Tracker",
+  "short_name": "Job Tracker",
+  "description": "AI-powered job application tracker with smart scoring",
+  "theme_color": "#1e40af",
+  "background_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "categories": ["productivity", "business"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot1.png",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "label": "Dashboard view showing AI match scores"
+    },
+    {
+      "src": "/screenshot2.png",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "label": "Analytics and insights view"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Sync Gmail",
+      "url": "/",
+      "description": "Sync latest applications from Gmail"
+    },
+    {
+      "name": "Analytics",
+      "url": "/?view=analytics",
+      "description": "View application analytics"
+    }
+  ]
+}

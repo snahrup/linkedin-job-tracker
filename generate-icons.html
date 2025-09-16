@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Tracker Icon Generator</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #1e293b;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+        }
+        .icon-container {
+            text-align: center;
+            color: white;
+        }
+        canvas {
+            border-radius: 20%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+            display: block;
+        }
+        button {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <!-- Icon canvases for different sizes -->
+    <div class="icon-container">
+        <canvas id="icon-512" width="512" height="512"></canvas>
+        <p>icon-512.png</p>
+        <button onclick="downloadIcon('icon-512', 512)">Download 512x512</button>
+    </div>
+    
+    <div class="icon-container">
+        <canvas id="icon-192" width="192" height="192"></canvas>
+        <p>icon-192.png</p>
+        <button onclick="downloadIcon('icon-192', 192)">Download 192x192</button>
+    </div>
+    
+    <div class="icon-container">
+        <canvas id="apple-icon" width="180" height="180"></canvas>
+        <p>apple-touch-icon.png</p>
+        <button onclick="downloadIcon('apple-icon', 180, 'apple-touch-icon')">Download 180x180</button>
+    </div>
+    
+    <div class="icon-container">
+        <canvas id="favicon-32" width="32" height="32"></canvas>
+        <p>favicon-32x32.png</p>
+        <button onclick="downloadIcon('favicon-32', 32, 'favicon-32x32')">Download 32x32</button>
+    </div>
+    
+    <div class="icon-container">
+        <canvas id="favicon-16" width="16" height="16"></canvas>
+        <p>favicon-16x16.png</p>
+        <button onclick="downloadIcon('favicon-16', 16, 'favicon-16x16')">Download 16x16</button>
+    </div>
+
+    <script>
+        function drawIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#3b82f6');
+            gradient.addColorStop(1, '#1e40af');
+            
+            // Background with rounded corners for iOS style
+            const radius = size * 0.2;
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(size - radius, 0);
+            ctx.quadraticCurveTo(size, 0, size, radius);
+            ctx.lineTo(size, size - radius);
+            ctx.quadraticCurveTo(size, size, size - radius, size);
+            ctx.lineTo(radius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw briefcase icon
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = size * 0.03;
+            
+            // Scale factors
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const iconSize = size * 0.5;
+            
+            // Briefcase body
+            const bodyWidth = iconSize * 0.8;
+            const bodyHeight = iconSize * 0.6;
+            const bodyX = centerX - bodyWidth / 2;
+            const bodyY = centerY - bodyHeight / 3;
+            
+            ctx.strokeRect(bodyX, bodyY, bodyWidth, bodyHeight);
+            
+            // Briefcase handle
+            const handleWidth = iconSize * 0.35;
+            const handleHeight = iconSize * 0.25;
+            const handleX = centerX - handleWidth / 2;
+            const handleY = bodyY - handleHeight / 2;
+            
+            ctx.beginPath();
+            ctx.moveTo(handleX, bodyY);
+            ctx.lineTo(handleX, handleY);
+            ctx.quadraticCurveTo(centerX, handleY - iconSize * 0.05, handleX + handleWidth, handleY);
+            ctx.lineTo(handleX + handleWidth, bodyY);
+            ctx.stroke();
+            
+            // AI sparkle dots
+            if (size > 32) {
+                ctx.fillStyle = '#fbbf24';
+                const sparkleSize = size * 0.02;
+                
+                // Top right sparkle
+                ctx.beginPath();
+                ctx.arc(bodyX + bodyWidth - iconSize * 0.1, bodyY + iconSize * 0.1, sparkleSize, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Bottom left sparkle
+                ctx.beginPath();
+                ctx.arc(bodyX + iconSize * 0.1, bodyY + bodyHeight - iconSize * 0.1, sparkleSize, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Center sparkle (larger)
+                ctx.beginPath();
+                ctx.arc(centerX, centerY + iconSize * 0.05, sparkleSize * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Add "AI" text for larger icons
+            if (size >= 180) {
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${size * 0.08}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('AI', centerX, bodyY + bodyHeight / 2);
+            }
+        }
+        
+        function downloadIcon(canvasId, size, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = (filename || `icon-${size}`) + '.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Draw all icons
+        drawIcon('icon-512', 512);
+        drawIcon('icon-192', 192);
+        drawIcon('apple-icon', 180);
+        drawIcon('favicon-32', 32);
+        drawIcon('favicon-16', 16);
+    </script>
+</body>
+</html>
