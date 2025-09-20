@@ -492,16 +492,29 @@ export async function fetchApplicationsFromGmail(
         statusHistory: [],
       };
       
-      // Update status (keep most significant)
-      if (shouldUpdateStatus(app.status, status)) {
-        console.log(`  Updating status from ${app.status} to ${status}`);
-        app.status = status;
-        if (status === "viewed") app.viewDate = applicationDate;
-        if (status === "interview_requested" || status === "offer" || status === "rejected") {
-          app.responseDate = applicationDate;
+      // Add to status history first
+      const newStatusEntry = { status, timestamp: applicationDate, source: "email" as const };
+      app.statusHistory = [
+        ...app.statusHistory,
+        newStatusEntry
+      ];
+      
+      // Sort status history and determine the most recent significant status
+      app.statusHistory.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      
+      // Find the most recent status with highest priority
+      const mostSignificantStatus = findMostSignificantStatus(app.statusHistory);
+      const statusChanged = app.status !== mostSignificantStatus.status;
+      
+      if (statusChanged) {
+        console.log(`  Updating status from ${app.status} to ${mostSignificantStatus.status} (email from ${mostSignificantStatus.timestamp})`);
+        app.status = mostSignificantStatus.status;
+        if (mostSignificantStatus.status === "viewed") app.viewDate = mostSignificantStatus.timestamp;
+        if (["interview_requested", "offer", "rejected"].includes(mostSignificantStatus.status)) {
+          app.responseDate = mostSignificantStatus.timestamp;
         }
       } else {
-        console.log(`  Keeping existing status ${app.status} (not updating to ${status})`);
+        console.log(`  Status remains ${app.status}`);
       }
       
       // Update email IDs
@@ -513,11 +526,6 @@ export async function fetchApplicationsFromGmail(
         app.emailIds.response = [...(app.emailIds.response || []), id];
       }
       
-      // Add to status history
-      app.statusHistory = [
-        ...app.statusHistory,
-        { status, timestamp: applicationDate, source: "email" as const }
-      ].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
       
       // Calculate days since application
       app.daysSinceApplication = Math.floor(
@@ -566,7 +574,7 @@ export async function fetchApplicationsFromGmail(
   return appsWithScores;
 }
 
-function shouldUpdateStatus(current: AppStatus, candidate: AppStatus): boolean {
+function findMostSignificantStatus(statusHistory: Array<{status: AppStatus, timestamp: string, source: string}>) {
   const priority: Record<AppStatus, number> = {
     pending: 0,
     viewed: 1,
@@ -574,5 +582,63 @@ function shouldUpdateStatus(current: AppStatus, candidate: AppStatus): boolean {
     interview_requested: 3,
     offer: 4,
   };
-  return priority[candidate] > priority[current];
+  
+  if (statusHistory.length === 0) {
+    return { status: "pending" as AppStatus, timestamp: new Date().toISOString(), source: "default" };
+  }
+  
+  // Sort by timestamp (most recent first)
+  const sortedHistory = [...statusHistory].sort((a, b) => 
+    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+  
+  // Find the highest priority status
+  let maxPriority = -1;
+  let mostSignificant = sortedHistory[0];
+  
+  for (const entry of sortedHistory) {
+    const entryPriority = priority[entry.status];
+    if (entryPriority > maxPriority) {
+      maxPriority = entryPriority;
+      mostSignificant = entry;
+    }
+  }
+  
+  return mostSignificant;
+}
+
+function shouldUpdateStatus(
+  current: AppStatus, 
+  candidate: AppStatus, 
+  candidateDate: Date, 
+  currentDate: Date
+): boolean {
+  const priority: Record<AppStatus, number> = {
+    pending: 0,
+    viewed: 1,
+    rejected: 2,
+    interview_requested: 3,
+    offer: 4,
+  };
+  
+  const currentPriority = priority[current];
+  const candidatePriority = priority[candidate];
+  
+  // Always update if candidate has higher priority
+  if (candidatePriority > currentPriority) {
+    return true;
+  }
+  
+  // If same priority, use the more recent email
+  if (candidatePriority === currentPriority) {
+    return candidateDate > currentDate;
+  }
+  
+  // Don't downgrade to lower priority status unless it's much more recent
+  // Exception: Allow pending -> viewed if viewed email is newer
+  if (current === "pending" && candidate === "viewed") {
+    return candidateDate > currentDate;
+  }
+  
+  return false;
 }

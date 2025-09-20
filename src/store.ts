@@ -83,11 +83,14 @@ export const useStore = create<StoreState>()(
       demoMode: false,
       apps: [],
       filters: {
-        search: '',
-        status: 'all',
+        query: '',
+        statuses: ['pending', 'viewed', 'interview_requested', 'offer', 'rejected'],
+        workLocations: ['remote', 'hybrid', 'onsite'],
+        employmentTypes: ['full_time', 'part_time', 'contract', 'temporary', 'internship'],
+        dateFrom: undefined,
+        dateTo: undefined,
         sortBy: 'date',
         sortOrder: 'desc',
-        dateRange: 'all',
         matchScoreMin: 0
       },
       

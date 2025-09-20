@@ -66,6 +66,9 @@ export interface FilterState {
   employmentTypes: EmploymentType[];
   dateFrom?: string;
   dateTo?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  matchScoreMin?: number;
 }
 
 export interface EmailMessage {
