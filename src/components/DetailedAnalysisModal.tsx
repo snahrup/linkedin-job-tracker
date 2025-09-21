@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Target, Brain, BarChart3, MapPin, DollarSign, 
-  CheckCircle, Lightbulb, User, Building2
+  CheckCircle, Lightbulb, User, Building2, RotateCcw
 } from 'lucide-react';
 import { ApplicationRec } from '../types';
-import { getScoreColor } from '../aiScoring';
+import { getScoreColor, calculateMatchScore } from '../aiScoring';
+import { useStore } from '../store';
 
 interface DetailedAnalysisModalProps {
   app: ApplicationRec | null;
@@ -16,7 +17,29 @@ interface DetailedAnalysisModalProps {
 export function DetailedAnalysisModal({ app, isOpen, onClose }: DetailedAnalysisModalProps) {
   if (!app || !app.matchScore) return null;
 
+  const { updateApp } = useStore();
+  const [isRerunning, setIsRerunning] = useState(false);
   const { matchScore } = app;
+
+  const handleRerunAnalysis = async () => {
+    if (isRerunning) return;
+    
+    setIsRerunning(true);
+    try {
+      const newMatchScore = await calculateMatchScore(app);
+      updateApp(app.id, {
+        matchScore: {
+          ...newMatchScore,
+          calculatedAt: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Failed to rerun analysis:', error);
+      alert('Failed to rerun analysis. Please try again.');
+    } finally {
+      setIsRerunning(false);
+    }
+  };
 
   const getOverallScoreText = (score: number) => {
     if (score >= 85) return { text: 'Excellent Match', color: 'text-green-400' };
@@ -92,12 +115,22 @@ export function DetailedAnalysisModal({ app, isOpen, onClose }: DetailedAnalysis
                       <p className="text-sm text-slate-400 mt-1">{app.location}</p>
                     </div>
                   </div>
-                  <button
-                    onClick={onClose}
-                    className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
-                  >
-                    <X className="h-6 w-6 text-slate-400" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleRerunAnalysis}
+                      disabled={isRerunning}
+                      className="flex items-center gap-2 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 disabled:bg-slate-700/50 border border-blue-500/30 rounded-lg transition-all text-sm text-blue-300 disabled:text-slate-500"
+                    >
+                      <RotateCcw className={`h-4 w-4 ${isRerunning ? 'animate-spin' : ''}`} />
+                      {isRerunning ? 'Analyzing...' : 'Rerun Analysis'}
+                    </button>
+                    <button
+                      onClick={onClose}
+                      className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                    >
+                      <X className="h-6 w-6 text-slate-400" />
+                    </button>
+                  </div>
                 </div>
               </div>
 

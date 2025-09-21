@@ -5,3 +5,6 @@ export { ApplicationCard } from './ApplicationCard';
 export { ApplicationGrid } from './ApplicationGrid';
 export { Analytics } from './Analytics';
 export { SettingsModal } from './SettingsModal';
+export { DetailedAnalysisModal } from './DetailedAnalysisModal';
+export { SupabaseAuthProvider } from './SupabaseAuthProvider';
+export { AuthModal } from './AuthModal';

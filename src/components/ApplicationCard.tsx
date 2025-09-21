@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Building2, MapPin, Clock, ExternalLink, DollarSign, 
-  Briefcase, Edit2, Save, X, FileText, Target, TrendingUp 
+  Briefcase, Edit2, Save, X, FileText, Target, TrendingUp, ChevronDown 
 } from 'lucide-react';
-import { ApplicationRec } from '../types';
+import { ApplicationRec, AppStatus } from '../types';
 import { STATUS_COLORS, STATUS_LABELS, formatDate, formatRelativeDate } from '../utils';
 import { useStore } from '../store';
 import { getScoreColor, formatScore } from '../aiScoring';
@@ -19,6 +19,7 @@ export function ApplicationCard({ app, viewMode = 'normal', onShowDetails }: App
   const { updateApp } = useStore();
   const [isEditing, setIsEditing] = useState(false);
   const [notes, setNotes] = useState(app.notes || '');
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
   const handleSaveNotes = () => {
     updateApp(app.id, { notes });
@@ -30,13 +31,42 @@ export function ApplicationCard({ app, viewMode = 'normal', onShowDetails }: App
     setIsEditing(false);
   };
 
+  const handleStatusChange = (newStatus: AppStatus) => {
+    updateApp(app.id, { 
+      status: newStatus,
+      statusHistory: [
+        ...app.statusHistory,
+        {
+          status: newStatus,
+          timestamp: new Date().toISOString(),
+          source: "manual" as const
+        }
+      ]
+    });
+    setShowStatusDropdown(false);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowStatusDropdown(false);
+    };
+
+    if (showStatusDropdown) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showStatusDropdown]);
+
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't trigger card click if clicking on interactive elements
     if (
       (e.target as HTMLElement).closest('button') ||
       (e.target as HTMLElement).closest('a') ||
       (e.target as HTMLElement).closest('textarea') ||
-      isEditing
+      (e.target as HTMLElement).closest('.status-dropdown') ||
+      isEditing ||
+      showStatusDropdown
     ) {
       return;
     }
@@ -80,9 +110,38 @@ export function ApplicationCard({ app, viewMode = 'normal', onShowDetails }: App
                   {formatScore(app.matchScore.overall)}
                 </span>
               )}
-              <span className={`px-2 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[app.status]}`}>
-                {STATUS_LABELS[app.status]}
-              </span>
+              <div className="relative status-dropdown">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowStatusDropdown(!showStatusDropdown);
+                  }}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border transition-all hover:opacity-80 ${STATUS_COLORS[app.status]}`}
+                >
+                  {STATUS_LABELS[app.status]}
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                
+                {showStatusDropdown && (
+                  <div className="absolute top-full right-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 min-w-[150px]">
+                    {(Object.keys(STATUS_LABELS) as AppStatus[]).map(status => (
+                      <button
+                        key={status}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStatusChange(status);
+                        }}
+                        className={`w-full text-left px-3 py-2 text-xs hover:bg-slate-700 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                          status === app.status ? 'bg-slate-700' : ''
+                        }`}
+                      >
+                        <span className={`inline-block w-3 h-3 rounded-full mr-2 ${STATUS_COLORS[status].includes('bg-') ? STATUS_COLORS[status].split(' ').find(c => c.includes('bg-')) : 'bg-slate-500'}`} />
+                        {STATUS_LABELS[status]}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               {app.linkedinUrl && (
                 <a
                   href={app.linkedinUrl}
@@ -116,9 +175,38 @@ export function ApplicationCard({ app, viewMode = 'normal', onShowDetails }: App
               <h3 className="font-semibold text-white text-sm line-clamp-1">{app.company}</h3>
               <p className="text-xs text-cyan-400 line-clamp-2 mt-1">{app.position}</p>
             </div>
-            <span className={`px-1.5 py-0.5 rounded text-xs font-medium border ${STATUS_COLORS[app.status]}`}>
-              {STATUS_LABELS[app.status].slice(0, 3)}
-            </span>
+            <div className="relative status-dropdown">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowStatusDropdown(!showStatusDropdown);
+                }}
+                className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium border transition-all hover:opacity-80 ${STATUS_COLORS[app.status]}`}
+              >
+                {STATUS_LABELS[app.status].slice(0, 3)}
+                <ChevronDown className="h-2.5 w-2.5" />
+              </button>
+              
+              {showStatusDropdown && (
+                <div className="absolute top-full right-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 min-w-[150px]">
+                  {(Object.keys(STATUS_LABELS) as AppStatus[]).map(status => (
+                    <button
+                      key={status}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStatusChange(status);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-xs hover:bg-slate-700 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                        status === app.status ? 'bg-slate-700' : ''
+                      }`}
+                    >
+                      <span className={`inline-block w-3 h-3 rounded-full mr-2 ${STATUS_COLORS[status].includes('bg-') ? STATUS_COLORS[status].split(' ').find(c => c.includes('bg-')) : 'bg-slate-500'}`} />
+                      {STATUS_LABELS[status]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="text-xs text-slate-400">
             {formatRelativeDate(app.applicationDate)}
@@ -166,9 +254,38 @@ export function ApplicationCard({ app, viewMode = 'normal', onShowDetails }: App
                 </span>
               </div>
             )}
-            <span className={`px-2 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[app.status]}`}>
-              {STATUS_LABELS[app.status]}
-            </span>
+            <div className="relative status-dropdown">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowStatusDropdown(!showStatusDropdown);
+                }}
+                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border transition-all hover:opacity-80 ${STATUS_COLORS[app.status]}`}
+              >
+                {STATUS_LABELS[app.status]}
+                <ChevronDown className="h-3 w-3" />
+              </button>
+              
+              {showStatusDropdown && (
+                <div className="absolute top-full right-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 min-w-[150px]">
+                  {(Object.keys(STATUS_LABELS) as AppStatus[]).map(status => (
+                    <button
+                      key={status}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStatusChange(status);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-xs hover:bg-slate-700 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                        status === app.status ? 'bg-slate-700' : ''
+                      }`}
+                    >
+                      <span className={`inline-block w-3 h-3 rounded-full mr-2 ${STATUS_COLORS[status].includes('bg-') ? STATUS_COLORS[status].split(' ').find(c => c.includes('bg-')) : 'bg-slate-500'}`} />
+                      {STATUS_LABELS[status]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         

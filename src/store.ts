@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { ApplicationRec, FilterState } from './types';
+import { syncApplicationsToSupabase, syncApplicationsFromSupabase } from './lib/supabaseService';
 
 // Initialize with environment variables if available
 const getInitialClientId = () => {
@@ -19,6 +20,7 @@ interface StoreState {
   accessToken: string | null;
   userEmail: string | null;
   openAIKey: string | null;
+  supabaseUserId: string | null;
   
   // User Profile
   userResume: string | null;
@@ -40,12 +42,15 @@ interface StoreState {
   autoSync: boolean;
   syncInterval: number; // minutes
   notifications: boolean;
+  filtersCollapsed: boolean;
+  useSupabase: boolean;
   
   // Actions
   setClientId: (id: string | null) => void;
   setAccessToken: (token: string | null) => void;
   setUserEmail: (email: string | null) => void;
   setOpenAIKey: (key: string | null) => void;
+  setSupabaseUserId: (id: string | null) => void;
   setUserResume: (resume: string | null) => void;
   setUserSkills: (skills: string[]) => void;
   setUserPreferences: (prefs: Partial<StoreState['userPreferences']>) => void;
@@ -59,6 +64,12 @@ interface StoreState {
   setAutoSync: (enabled: boolean) => void;
   setSyncInterval: (minutes: number) => void;
   setNotifications: (enabled: boolean) => void;
+  setFiltersCollapsed: (collapsed: boolean) => void;
+  setUseSupabase: (enabled: boolean) => void;
+  
+  // Supabase sync actions
+  syncToSupabase: () => Promise<void>;
+  syncFromSupabase: () => Promise<ApplicationRec[]>;
 }
 
 export const useStore = create<StoreState>()(
@@ -69,6 +80,7 @@ export const useStore = create<StoreState>()(
       accessToken: null,
       userEmail: null,
       openAIKey: getInitialOpenAIKey(),
+      supabaseUserId: null,
       
       userResume: null,
       userSkills: [],
@@ -97,12 +109,15 @@ export const useStore = create<StoreState>()(
       autoSync: false,
       syncInterval: 30,
       notifications: true,
+      filtersCollapsed: false,
+      useSupabase: true,
       
       // Actions
       setClientId: (id) => set({ clientId: id }),
       setAccessToken: (token) => set({ accessToken: token }),
       setUserEmail: (email) => set({ userEmail: email }),
       setOpenAIKey: (key) => set({ openAIKey: key }),
+      setSupabaseUserId: (id) => set({ supabaseUserId: id }),
       setUserResume: (resume) => set({ userResume: resume }),
       setUserSkills: (skills) => set({ userSkills: skills }),
       setUserPreferences: (prefs) => 
@@ -123,7 +138,27 @@ export const useStore = create<StoreState>()(
       
       setAutoSync: (enabled) => set({ autoSync: enabled }),
       setSyncInterval: (minutes) => set({ syncInterval: minutes }),
-      setNotifications: (enabled) => set({ notifications: enabled })
+      setNotifications: (enabled) => set({ notifications: enabled }),
+      setFiltersCollapsed: (collapsed) => set({ filtersCollapsed: collapsed }),
+      setUseSupabase: (enabled) => set({ useSupabase: enabled }),
+      
+      // Supabase sync actions
+      syncToSupabase: async () => {
+        const state = useStore.getState();
+        if (!state.supabaseUserId || !state.useSupabase) {
+          throw new Error('Not authenticated with Supabase');
+        }
+        await syncApplicationsToSupabase(state.apps, state.supabaseUserId);
+      },
+      syncFromSupabase: async () => {
+        const state = useStore.getState();
+        if (!state.supabaseUserId || !state.useSupabase) {
+          throw new Error('Not authenticated with Supabase');
+        }
+        const apps = await syncApplicationsFromSupabase(state.supabaseUserId);
+        set({ apps });
+        return apps;
+      }
     }),
     {
       name: 'linkedin-tracker-store',
@@ -140,6 +175,9 @@ export const useStore = create<StoreState>()(
         autoSync: state.autoSync,
         syncInterval: state.syncInterval,
         notifications: state.notifications,
+        filtersCollapsed: state.filtersCollapsed,
+        useSupabase: state.useSupabase,
+        supabaseUserId: state.supabaseUserId,
         // Only persist API keys if they're different from env vars
         clientId: state.clientId !== import.meta.env.VITE_GMAIL_CLIENT_ID ? state.clientId : null,
         openAIKey: state.openAIKey !== import.meta.env.VITE_OPENAI_API_KEY ? state.openAIKey : null

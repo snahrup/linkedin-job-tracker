@@ -6,7 +6,9 @@ import {
   StatsRow,
   ApplicationGrid,
   Analytics,
-  SettingsModal
+  SettingsModal,
+  SupabaseAuthProvider,
+  AuthModal
 } from './components';
 import {
   fetchApplicationsFromGmail,
@@ -44,14 +46,18 @@ function App() {
     apps,
     setApps,
     filters,
+    filtersCollapsed,
     touchUpdated,
     autoSync,
     syncInterval,
-    notifications
+    notifications,
+    supabaseUserId,
+    useSupabase
   } = useStore();
 
   const [loading, setLoading] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [gsiLoaded, setGsiLoaded] = useState(false);
   const [syncProgress, setSyncProgress] = useState<string | null>(null);
   const tokenClientRef = useRef<any>(null);
@@ -135,14 +141,12 @@ function App() {
     };
   }, [setAccessToken, setUserEmail, setApps]);
 
-  // Load demo data on mount if needed
+  // Show auth modal if not authenticated and no apps
   useEffect(() => {
-    if (apps.length === 0 && !accessToken) {
-      setDemoMode(true);
-      setApps(generateDemoData());
-      touchUpdated();
+    if (useSupabase && !supabaseUserId && apps.length === 0 && !demoMode) {
+      setAuthModalOpen(true);
     }
-  }, []);
+  }, [useSupabase, supabaseUserId, apps.length, demoMode]);
 
   const fetchData = async (token: string = accessToken!) => {
     if (demoMode) {
@@ -232,21 +236,22 @@ function App() {
   const stats = useMemo(() => buildStats(filteredApps), [filteredApps]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
-      <div className="fixed inset-0 opacity-30 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-transparent to-purple-600/20" />
-      </div>
-      
-      <div className="relative z-10">
-        {/* Add safe area padding for iPhone notch */}
-        <div className="safe-top" />
+    <SupabaseAuthProvider>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+        <div className="fixed inset-0 opacity-30 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-transparent to-purple-600/20" />
+        </div>
         
-        <Header
-          onRefresh={() => fetchData()}
-          onSettingsClick={() => setSettingsOpen(true)}
-          onExport={() => exportToCSV(apps)}
-          loading={loading}
-        />
+        <div className="relative z-10">
+          {/* Add safe area padding for iPhone notch */}
+          <div className="safe-top" />
+          
+          <Header
+            onRefresh={() => fetchData()}
+            onSettingsClick={() => setSettingsOpen(true)}
+            onExport={() => exportToCSV(apps)}
+            loading={loading}
+          />
 
         <main className="mx-auto max-w-7xl px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
           {/* Sync Progress */}
@@ -259,14 +264,30 @@ function App() {
             </div>
           )}
 
-          {/* Filters - Mobile optimized */}
-          <Filters />
-
-          {/* Stats - Mobile responsive */}
-          <StatsRow stats={stats} />
-
-          {/* Applications Grid - Touch optimized */}
-          <ApplicationGrid applications={filteredApps} />
+          {/* Conditional Layout based on filters collapsed state */}
+          {filtersCollapsed ? (
+            <>
+              {/* KPI Cards First when collapsed */}
+              <StatsRow stats={stats} />
+              
+              {/* Collapsed Filters */}
+              <Filters />
+              
+              {/* Applications Grid */}
+              <ApplicationGrid applications={filteredApps} />
+            </>
+          ) : (
+            <>
+              {/* Expanded Filters First */}
+              <Filters />
+              
+              {/* KPI Cards */}
+              <StatsRow stats={stats} />
+              
+              {/* Applications Grid */}
+              <ApplicationGrid applications={filteredApps} />
+            </>
+          )}
 
           {/* Analytics - Hidden on small screens for performance */}
           {apps.length > 0 && (
@@ -288,13 +309,20 @@ function App() {
           )}
         </main>
 
-        {/* Settings Modal */}
-        <SettingsModal
-          isOpen={settingsOpen}
-          onClose={() => setSettingsOpen(false)}
-        />
+          {/* Settings Modal */}
+          <SettingsModal
+            isOpen={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
+          />
+
+          {/* Auth Modal */}
+          <AuthModal
+            isOpen={authModalOpen}
+            onClose={() => setAuthModalOpen(false)}
+          />
+        </div>
       </div>
-    </div>
+    </SupabaseAuthProvider>
   );
 }
 
